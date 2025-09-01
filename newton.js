@@ -272,45 +272,93 @@ function solveHashiraPlacement(jsonInput) {
     return newtonSecret;
 }
 
-// Test with both test cases
-function runTestCases() {
-    // Test Case 1
-    const testCase1 = {
-        "keys": { "n": 4, "k": 3 },
-        "1": { "base": "10", "value": "4" },
-        "2": { "base": "2", "value": "111" },
-        "3": { "base": "10", "value": "12" },
-        "6": { "base": "4", "value": "213" }
-    };
-    
-    // Test Case 2  
-    const testCase2 = {
-        "keys": { "n": 10, "k": 7 },
-        "1": { "base": "6", "value": "13444211440455345511" },
-        "2": { "base": "15", "value": "aed7015a346d635" },
-        "3": { "base": "15", "value": "6aeeb69631c227c" },
-        "4": { "base": "16", "value": "e1b5e05623d881f" },
-        "5": { "base": "8", "value": "316034514573652620673" },
-        "6": { "base": "3", "value": "2122212201122002221120200210011020220200" },
-        "7": { "base": "3", "value": "20120221122211000100210021102001201112121" },
-        "8": { "base": "6", "value": "20220554335330240002224253" },
-        "9": { "base": "12", "value": "45153788322a1255483" },
-        "10": { "base": "7", "value": "1101613130313526312514143" }
-    };
-    
-    console.log("TESTING MULTIPLE POLYNOMIAL RECONSTRUCTION METHODS");
-    console.log("===================================================");
-    
-    console.log("\n🔍 PROCESSING TEST CASE 1 🔍");
-    const result1 = solveHashiraPlacement(testCase1);
-    
-    console.log("\n\n🔍 PROCESSING TEST CASE 2 🔍");
-    const result2 = solveHashiraPlacement(testCase2);
-    
-    console.log("\n📊 FINAL SUMMARY:");
-    console.log(`Test Case 1 Secret: ${result1}`);
-    console.log(`Test Case 2 Secret: ${result2}`);
+// Function to read and process JSON file
+function processJsonFile(filename, testCaseNumber) {
+    try {
+        console.log(`\n📁 Reading ${filename}...`);
+        const jsonContent = fs.readFileSync(filename, 'utf8');
+        const data = JSON.parse(jsonContent);
+        
+        console.log(`✅ Successfully loaded ${filename}`);
+        console.log(`\n🔍 PROCESSING TEST CASE ${testCaseNumber} from ${filename} 🔍`);
+        
+        const result = solveHashiraPlacement(data);
+        
+        console.log(`\n✨ Test Case ${testCaseNumber} Result: ${result}`);
+        return result;
+        
+    } catch (error) {
+        console.error(`❌ Error processing ${filename}:`, error.message);
+        return null;
+    }
 }
 
-// Run the test cases
-runTestCases();
+// Main function to run test cases from files
+function runTestCasesFromFiles() {
+    console.log("🚀 SHAMIR'S SECRET SHARING - MULTIPLE METHODS");
+    console.log("=" + "=".repeat(50));
+    console.log("📂 Reading test cases from JSON files...\n");
+    
+    const results = [];
+    
+    // Process test1.json
+    const result1 = processJsonFile('test1.json', 1);
+    if (result1 !== null) results.push(result1);
+    
+    // Process test2.json  
+    const result2 = processJsonFile('test2.json', 2);
+    if (result2 !== null) results.push(result2);
+    
+    // Final summary
+    console.log("\n" + "=".repeat(60));
+    console.log("📊 FINAL SUMMARY");
+    console.log("=".repeat(60));
+    
+    if (result1 !== null) {
+        console.log(`🔐 Test Case 1 (test1.json) Secret: ${result1}`);
+    }
+    if (result2 !== null) {
+        console.log(`🔐 Test Case 2 (test2.json) Secret: ${result2}`);
+    }
+    
+    console.log(`\n✅ Successfully processed ${results.length} test case(s)`);
+    
+    return results;
+}
+
+// Check if files exist before processing
+function checkFilesAndRun() {
+    const filesToCheck = ['test1.json', 'test2.json'];
+    const existingFiles = [];
+    
+    console.log("🔍 Checking for JSON files...");
+    
+    filesToCheck.forEach(filename => {
+        try {
+            fs.accessSync(filename, fs.constants.F_OK);
+            existingFiles.push(filename);
+            console.log(`✅ Found: ${filename}`);
+        } catch (error) {
+            console.log(`⚠️  Not found: ${filename}`);
+        }
+    });
+    
+    if (existingFiles.length === 0) {
+        console.error("\n❌ No JSON files found!");
+        console.log("Please ensure test1.json and/or test2.json exist in the current directory.");
+        console.log("\nExpected format:");
+        console.log(`{
+    "keys": { "n": 4, "k": 3 },
+    "1": { "base": "10", "value": "4" },
+    "2": { "base": "2", "value": "111" },
+    ...
+}`);
+        return;
+    }
+    
+    console.log(`\n🎯 Found ${existingFiles.length} file(s). Starting processing...\n`);
+    runTestCasesFromFiles();
+}
+
+// Run the program
+checkFilesAndRun();
